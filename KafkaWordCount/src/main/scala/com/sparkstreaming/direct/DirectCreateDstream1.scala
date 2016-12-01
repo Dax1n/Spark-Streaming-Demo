@@ -21,6 +21,7 @@ object DirectCreateDstream1 {
     sc.setLogLevel("WARN")
 
 
+	
     def createStreamingContext():StreamingContext={
       val ssc = new StreamingContext(sc, Seconds(2))
       ssc.checkpoint("C:\\streamingcheckpoint1")
@@ -35,18 +36,14 @@ object DirectCreateDstream1 {
       ssc
     }
 
-
+// 重重注意：对于Spark的Transform和Action都要写在getOrCreate的createStreamingContext函数中，否则报错！！！，此处更多技巧看官方文档
+//官网地址：http://spark.apache.org/docs/latest/streaming-programming-guide.html的 Checkpointing 章节
+//
     val ssc = StreamingContext.getOrCreate("C:\\streamingcheckpoint1",createStreamingContext _)
-
-    // 如果每次都是重新创建StreamingContext 这样不会容错，因为每一次StreamingContext都是新的。
-    //我们应该存在StreamingContext的直接使用，不存在的话在根据checkpoint创建
-    //  val ssc =  new StreamingContext(sc, Seconds(2))
-
-
-
-
-
-
+//错误信息：
+//16/12/01 09:04:38 ERROR streaming.StreamingContext: Error starting the context, marking it as stopped
+//org.apache.spark.SparkException: org.apache.spark.streaming.dstream.MappedDStream@4c2a67cc has not been initialized
+	
     ssc.start()
     ssc.awaitTermination()
 
